@@ -3,23 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>密文 · Cipher Tool</title>
+<title>工具 · Toolbox</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <div id="app">
-  <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-header">密码</div>
+    <div class="sidebar-header">工具</div>
     <nav class="sidebar-list">
-      <div
-        v-for="c in ciphers"
-        :key="c.id"
+      <a
+        v-for="item in navItems"
+        :key="item.id"
+        :href="item.href"
         class="sidebar-item"
-        :class="{ active: cipher === c.id }"
-        @click="selectCipher(c.id)"
-      >{{ c.name }}</div>
+        :class="{ active: item.active }"
+      >{{ item.name }}</a>
     </nav>
     <div class="sidebar-footer">
       <button class="theme-toggle" @click="dark = !dark">
@@ -28,79 +27,44 @@
     </div>
   </aside>
 
-  <!-- Main -->
   <main class="main">
     <div class="main-header">
-      <span class="main-title">{{ current.name }}</span>
-      <a v-if="current.wiki" :href="current.wiki" target="_blank" class="wiki-link">Wiki</a>
-      <span class="main-desc">{{ current.desc }}</span>
+      <span class="main-title">工具箱</span>
+      <span class="main-desc">选择左侧工具开始使用</span>
     </div>
-
-    <div class="controls">
-      <input
-        v-if="needsKey"
-        v-model="key"
-        class="key-input"
-        :placeholder="current.keyPh"
-        @keyup.enter="encrypt"
-        spellcheck="false"
-      >
-      <button class="btn btn-primary" @click="encrypt">加密</button>
-      <button class="btn" @click="decrypt">解密</button>
-      <button class="btn" @click="swap">互换</button>
-      <button class="btn" @click="clearAll">清空</button>
-    </div>
-
-    <div class="editor-grid">
-      <div class="editor-panel">
-        <div class="editor-label">
-          <span>输入</span>
-          <span class="count">{{ input.length }} 字符</span>
-        </div>
-        <textarea
-          v-model="input"
-          placeholder="在此输入文本..."
-          spellcheck="false"
-        ></textarea>
-        <div class="editor-footer">
-          <span class="info">Ctrl+Enter 加密</span>
-          <button class="copy-btn" @click="copyInput">复制</button>
-        </div>
-      </div>
-
-      <div class="editor-panel">
-        <div class="editor-label">
-          <span>输出</span>
-          <span class="count">{{ output.length }} 字符</span>
-        </div>
-        <textarea
-          :key="output"
-          :value="output"
-          placeholder="结果将显示在这里..."
-          readonly
-          spellcheck="false"
-          class="output-area"
-        ></textarea>
-        <div class="editor-footer">
-          <span class="info">{{ output ? '就绪' : '' }}</span>
-          <button
-            class="copy-btn"
-            :class="{ copied: copied }"
-            @click="copyOutput"
-          >{{ copied ? '已复制' : '复制' }}</button>
-        </div>
-      </div>
+    <div class="nav-cards">
+      <a v-for="item in navItems" :key="item.id" :href="item.href" class="nav-card">
+        <div class="nav-card-icon">{{ item.icon }}</div>
+        <div class="nav-card-name">{{ item.name }}</div>
+        <div class="nav-card-desc">{{ item.desc }}</div>
+      </a>
     </div>
   </main>
-
-  <div v-if="toast" class="toast">{{ toast }}</div>
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/classic.js"></script>
-<script src="js/ciphers.js"></script>
-<script src="js/app.js"></script>
+<script>
+var { createApp, ref, watch } = Vue;
+
+createApp({
+  setup: function () {
+    var dark = ref(false);
+
+    function applyTheme(val) {
+      document.documentElement.classList.toggle('dark', val);
+    }
+    applyTheme(dark.value);
+    watch(dark, applyTheme);
+
+    var navItems = ref([
+      { id: 'cipher', name: '密码工具', href: 'cipher.html', icon: '\u{1F512}', desc: '加密与解密', active: false },
+      { id: 'chart', name: '图表绘制', href: 'chart.html', icon: '\u{1F4CA}', desc: '折线 · 条形 · 扇形', active: false },
+    ]);
+
+    return { dark: dark, navItems: navItems };
+  }
+}).mount('#app');
+</script>
 
 </body>
 </html>

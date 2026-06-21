@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图表 · Chart Tool</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+.chart-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 960px) {
+  .chart-layout {
+    grid-template-columns: 1fr 1.3fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .chart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  min-height: 0;
+  transition: border-color 0.25s ease;
+}
+
+.chart-panel-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  user-select: none;
+}
+
+.chart-panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 14px;
+  gap: 10px;
+}
+
+.chart-panel-body label {
+  font-size: 11px;
+  color: var(--text2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chart-panel-body input,
+.chart-panel-body textarea {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--mono);
+  outline: none;
+  transition: border-color 0.2s ease, background 0.35s ease, color 0.35s ease;
+}
+
+.chart-panel-body textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: var(--font);
+  line-height: 1.6;
+}
+
+.chart-panel-body input:focus,
+.chart-panel-body textarea:focus {
+  border-color: var(--text);
+  box-shadow: 0 0 0 1px var(--text);
+}
+
+.chart-panel-body input::placeholder,
+.chart-panel-body textarea::placeholder {
+  color: var(--text2);
+  opacity: 0.5;
+}
+
+.chart-type-group {
+  display: flex;
+  gap: 6px;
+}
+
+.chart-type-btn {
+  flex: 1;
+  padding: 7px 0;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.chart-type-btn:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.chart-type-btn.active {
+  background: var(--active);
+  color: var(--active-text);
+  border-color: var(--active);
+}
+
+.chart-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chart-actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+.series-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.series-row {
+  display: flex;
+  gap: 5px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.series-row .sname {
+  width: 64px;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.series-row .slabels {
+  width: 90px;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.series-row .svals {
+  flex: 1;
+  min-width: 80px;
+  min-height: 28px;
+  font-family: var(--mono);
+  font-size: 12px;
+  resize: vertical;
+}
+
+.series-row .spos {
+  width: 44px;
+  flex-shrink: 0;
+  font-size: 12px;
+  text-align: center;
+}
+
+.series-del {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text2);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.series-del:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.series-add {
+  padding: 6px 12px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.series-add:hover {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.bg-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.bg-toggle .btn {
+  flex: 1;
+}
+
+.bg-toggle .btn.active {
+  background: var(--active);
+  color: var(--active-text);
+  border-color: var(--active);
+}
+
+.chart-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+#chartCanvas {
+  display: block;
+  max-width: 100%;
+  image-rendering: auto;
+}
+
+.chart-hint {
+  font-size: 11px;
+  color: var(--text2);
+  opacity: 0.5;
+  padding: 0 14px 10px;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .chart-panel-body {
+    padding: 8px 10px 10px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">图表</div>
+    <nav class="sidebar-list">
+      <div
+        class="sidebar-item"
+        :class="{ active: chartType === 'bar' }"
+        @click="chartType = 'bar'"
+      >条形图</div>
+      <div
+        class="sidebar-item"
+        :class="{ active: chartType === 'line' }"
+        @click="chartType = 'line'"
+      >折线图</div>
+      <div
+        class="sidebar-item"
+        :class="{ active: chartType === 'pie' }"
+        @click="chartType = 'pie'"
+      >扇形图</div>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="index.html" class="nav-link">导航</a>
+      <button class="theme-toggle" @click="dark = !dark">
+        {{ dark ? '浅色' : '深色' }}
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-header">
+      <span class="main-title">{{ chartType === 'bar' ? '条形图' : chartType === 'line' ? '折线图' : '扇形图' }}</span>
+      <span class="main-desc">{{ chartType === 'pie' ? '多饼图 · 拖拽移动 · 独立标题' : '多系列图表 · 绘制并保存为 PNG' }}</span>
+    </div>
+
+    <div class="chart-layout">
+      <div class="chart-panel">
+        <div class="chart-panel-label">
+          <span>数据</span>
+          <span class="count">{{ chartType === 'pie' ? series.length + ' 个饼图' : parsedLabels.length + ' 项 × ' + series.length + ' 系列' }}</span>
+        </div>
+        <div class="chart-panel-body">
+          <label v-if="chartType !== 'pie'">
+            标题
+            <input v-model="chartTitle" placeholder="图表标题">
+          </label>
+          <label v-if="chartType !== 'pie'">
+            标签（逗号分隔）
+            <textarea v-model="labels" placeholder="一月,二月,三月,四月,五月"></textarea>
+          </label>
+          <div class="series-list">
+            <div v-for="(s, i) in series" :key="i" class="series-row">
+              <input v-model="s.name" class="sname" :placeholder="chartType === 'pie' ? '饼图标题' : '系列名'">
+              <input v-if="chartType === 'pie'" v-model="s.labels" class="slabels" placeholder="标签">
+              <textarea v-model="s.values" class="svals" placeholder="数值"></textarea>
+              <template v-if="chartType === 'pie'">
+                <input v-model.number="s.px" type="number" min="0" max="100" class="spos" placeholder="X%">
+                <input v-model.number="s.py" type="number" min="0" max="100" class="spos" placeholder="Y%">
+                <input v-model.number="s.r" type="number" min="20" max="300" class="spos" placeholder="R">
+              </template>
+              <button v-if="series.length > 1" class="series-del" @click="removeSeries(i)">×</button>
+            </div>
+          </div>
+          <button class="series-add" @click="addSeries">+ 添加系列</button>
+          <div class="bg-toggle">
+            <button class="btn" :class="{ active: !whiteBg }" @click="whiteBg = false">透明背景</button>
+            <button class="btn" :class="{ active: whiteBg }" @click="whiteBg = true">白色背景</button>
+          </div>
+          <div class="chart-type-group">
+            <div
+              class="chart-type-btn"
+              :class="{ active: chartType === 'bar' }"
+              @click="chartType = 'bar'"
+            >条形</div>
+            <div
+              class="chart-type-btn"
+              :class="{ active: chartType === 'line' }"
+              @click="chartType = 'line'"
+            >折线</div>
+            <div
+              class="chart-type-btn"
+              :class="{ active: chartType === 'pie' }"
+              @click="chartType = 'pie'"
+            >扇形</div>
+          </div>
+          <div class="chart-actions">
+            <button class="btn btn-primary" @click="drawChart">绘制</button>
+            <button class="btn" @click="saveChart">保存</button>
+            <button class="btn" @click="clearChart">清空</button>
+            <button class="btn" @click="loadSample">示例</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="chart-panel-label">
+          <span>预览</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartCanvas"></canvas>
+        </div>
+        <div class="chart-hint">{{ chartType === 'pie' ? '拖拽饼图可自由移动位置' : '点击「绘制」生成图表，「保存」下载为 PNG' }}</div>
+      </div>
+    </div>
+  </main>
+
+  <div v-if="toast" class="toast">{{ toast }}</div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="js/chart.js"></script>
+
+</body>
+</html>
